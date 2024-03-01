@@ -7,7 +7,7 @@ Follow the instructions below to start analyzing, visualizing and reporting on J
 # To Use
 ## Option 1
 Leverage an existing file.
-* Copy the Google Sheet [jings (example)](https://docs.google.com/spreadsheets/d/1qQP1mqdSjsGSBJdXWy6PzuVepDwCboGAEMFrnpvgWZA/edit#gid=1042172636) and follow the instruction in the [prep work](prep-work.md).
+* Copy the Google Sheet [jings (example)](https://docs.google.com/spreadsheets/d/1qQP1mqdSjsGSBJdXWy6PzuVepDwCboGAEMFrnpvgWZA/edit#gid=1042172636) and follow the the [prep work](prep-work.md) steps.
 
 ## Option 2
 * Create a new Google Sheet with an AppScript project.
