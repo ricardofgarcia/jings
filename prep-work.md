@@ -1,3 +1,7 @@
+# Assumptions
+1. You already have a Google AppScript Project attached to a Google Sheets. If not, follow these [instructions](https://spreadsheet.dev/creating-your-first-apps-script) to create one.
+2. You have a jira account and are able to obtain a Personal Access Token to interact with the Jira API.
+
 # Prep Work
 - Login to your Jira instance and [generate a Jira Personal Access Token](#generate-a-jira-personal-access-token).
 - In the Google Apps Script Project...
