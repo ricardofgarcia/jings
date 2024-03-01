@@ -1,12 +1,25 @@
 # jings - a Jira Issue Navigator for Google Sheets
 
-Having Jira data in Google Sheets opens a world of possibilities to analyze, report and visualize data about Jira and projects.
+Jings brings the  **J**ira **I**ssue **N**avigator functionality into **G**oogle Sheets. Just provide a JQL statement in a Google Sheet and jings will fetch and write the data in it.
 
-This project provides a **J**ira client for the **I**ssue **N**avigator functionality in **G**oogle Sheets.
+Follow the instructions below to start analyzing, visualizing and reporting on Jira issues right within Google Sheets.
 
-# Assumptions
-1. You already have a Google AppScript Project attached to a Google Sheets. If not, follow these [instructions](https://spreadsheet.dev/creating-your-first-apps-script) to create one.
-2. You have a jira account and are able to obtain a Personal Access Token to interact with the Jira API.
+# To Use
+## Option 1
+Leverage an existing file.
+* Copy the Google Sheet [jings (example)](https://docs.google.com/spreadsheets/d/1qQP1mqdSjsGSBJdXWy6PzuVepDwCboGAEMFrnpvgWZA/edit#gid=1042172636) and follow the instruction in the [prep work](prep-work.md).
 
-# Prep Work
-Please review and follow the steps in the [Prep Work](prep-work.md) section to ensure the tool will work.
+## Option 2
+* Create a new Google Sheet with an AppScript project.
+* Follow the [prep work](prep-work.md) steps.
+* Create files with the same name as those in this repo and copy their content.
+
+After that, you will be set to use or modify the tool to your needs.
+
+# Code of interest
+Here is a list of files, functions and objects you could modify to taylor the code to your needs.
+| **File**  | **Symbol**    | **Type**  | **Description**   |
+|---	|---	|---	|---	|
+| IssueNavigatorSheet	| refreshJiraData    	| function  	| Invoke it from a Google sheet to populate it with data from Jira issues.   	|
+| JiraIssueFields   | gJiraIssueFieldsMap_DisplayToId	| Map  	| Update it to add,remove and modify issue fields to fetch from Jira. 	|
+| JiraIssueFields  	| gIssueLinkTypesMap  	|  Map 	|   Update it to add,remove and modify issue links to fetch from Jira.	|
