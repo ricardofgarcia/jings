@@ -1,8 +1,6 @@
-
-//TODO: Add some instructios on how to add/remove fields, change their order, etc...
 /**
  * Some tips:
- *  - To add a field to fetch: add an entry with [<DISPLAY_NAME>,<FIELD_ID>]
+ *  - To add a field to fetch: add an entry with [<DISPLAY_NAME>,<FIELD_ID>] and set its "getter"
  *  - To remove a field from being fetched: comment out the line containing the field info
  *  - To change the order in which fields are displayed: change the order of the elements in the map
  */
@@ -12,8 +10,8 @@ const gJiraIssueFieldsMap_DisplayToId = new Map([
   ['Type' , 'issuetype'],
   ['Summary' , 'summary'],
   ['Status' , 'status'],
+  ['Color Status','customfield_12320845'],
   ['Assignee' , 'assignee'],
-//  ['Description' , 'description'],
   ['Priority' , 'priority'],
   ['Fix Version(s)' , 'fixVersions'],
   ['Labels' , 'labels'],
@@ -23,14 +21,21 @@ const gJiraIssueFieldsMap_DisplayToId = new Map([
   ['Components' , 'components'],
   ['Target Start Date' , 'customfield_12313941'],
   ['Target End Date' , 'customfield_12313942'],
+  ['Planning Target','customfield_12319440'],
+  ['Target Version','customfield_12319940'],
+  ['Hierarchy Progress','customfield_12317140'],
+  ['Due Date','duedate'],
+  ['Resolution Date','resolutiondate'],
+  ['QA Contact' , 'customfield_12315948'],
+  ['Product Manager' , 'customfield_12316752'],
+  ['Developer','customfield_12315141'], //Developer = Feature Lead
   ['Blocked' , 'customfield_12316543'],
   ['Parent Link' , 'customfield_12313140'],
   ['Epic Link' , 'customfield_12311140'],
   ['T-Shirt Size' , 'customfield_12316541'],
   ['Story Points' , 'customfield_12310243'],
-//  ['Original Story Points' , 'customfield_12314040'],
-//  ['Pool Team' , 'customfield_12317259'],
-//  ['Sprint ' , 'customfield_12310940'],
+  ['Release Blocker','customfield_12319743'],
+  ['Current Status','customfield_12317320'],
   ['Issue Links' , 'issuelinks']
 ]);
 
@@ -71,15 +76,23 @@ function checkIssueFieldMaps(){
  * returns Jira issue fields to fetch
  * TODO: Make fields configurable - read from somewhere in the Google Sheet (or equivalent)
 */
-function getJiraFieldsToFetch_FieldId(){
+function getJiraFieldsToFetch_FieldId_asArray(){
+  var fields = [];
+
+  for (const [key, value] of gJiraIssueFieldsMap_DisplayToId.entries()) {
+    fields.push(value);
+  }
+
+  return fields;
+}
+
+function getJiraFieldsToFetch_FieldId_AsCsv(){
   var fields = "";
 
   for (const [key, value] of gJiraIssueFieldsMap_DisplayToId.entries()) {
     if (fields == "") { fields = value;}
     else { fields += "," + value; }
   }
-
-  //console.log(fields);
 
   return fields;
 }
@@ -93,7 +106,8 @@ function getJiraFieldsToFetch_DisplayName(){
 
   //regular fields
   for (const [key, value] of gJiraIssueFieldsMap_DisplayToId.entries()) {
-    displayNames.push(key);
+    //skip "Issue Links"
+    if (key != "Issue Links") { displayNames.push(key); }
   }
  
   //issue links
@@ -104,62 +118,6 @@ function getJiraFieldsToFetch_DisplayName(){
   //console.log(displayNames);
   
   return displayNames;
-}
-
-//TODO: Add some instructios on how to add/remove fields, change their order, etc...
-const gLinkDirection_Outward = 0;
-const gLinkDirection_Inward = 1;
-
-const gIssueLinkTypesMap = new Map([
-    ["blocks", gLinkDirection_Outward],
-    ["is blocked by",gLinkDirection_Inward],
-    ["relates to", gLinkDirection_Outward],
-    ["is related to",gLinkDirection_Inward],
-    ["depends on", gLinkDirection_Outward]
-  ]);
-
-function getIssueLinks(issueLinks){
-
-  var issueLinkValues = new Map(gIssueLinkTypesMap);
-
-  for (const issueLinkType of gIssueLinkTypesMap.keys()){
-    linkedIssuesCsv = getIssueLinksOfType(issueLinkType,issueLinks);
-    issueLinkValues.set(issueLinkType,linkedIssuesCsv.replaceAll(",",String.fromCharCode(10)))
-    console.log("getIssueLinks: " + issueLinkType);
-    console.log("getIssueLinks: " + linkedIssuesCsv);
-  }
-
-  return issueLinkValues;
-}
-
-function getIssueLinksOfType(issueLinkType=null,issueLinks=null){
-  var issueLinksCsv = "none";
-  console.log("getIssueLinksOfType: " + "'" + issueLinkType + "'");
-
-  if (issueLinks != null){
-      for (var issueLinkIndex in issueLinks){
-        var issueLink = issueLinks[issueLinkIndex];
-        if (issueLink != null){
-            var issueLinkValue = "";
-            if (issueLink.type.inward == issueLinkType && issueLink.inwardIssue != null){
-              issueLinkValue = issueLink.inwardIssue.key;
-            }
-            else if (issueLink.type.outward == issueLinkType && issueLink.outwardIssue != null){
-              issueLinkValue = issueLink.outwardIssue.key; 
-            }
-
-            if (issueLinkValue != ""){
-              if (issueLinksCsv == "none"){
-                  issueLinksCsv = issueLinkValue; 
-              }                    
-              else{
-                  issueLinksCsv = issueLinksCsv + "," + issueLinkValue;
-              }
-            }
-          }
-        }
-      }
-  return issueLinksCsv;
 }
 
 /**
@@ -177,7 +135,6 @@ function processJiraResponseData(responseData,processedJiraData){
 
     fieldValues = new Map();
     //loop through the fields we are interested in and extract their value
-// CONTINUE HERE...
       for (const fieldId of gJiraIssueFieldsMap_IdToDisplay.keys()){
 
         fieldValue = "";
@@ -186,13 +143,23 @@ function processJiraResponseData(responseData,processedJiraData){
         }else if (issue.fields[fieldId] != null){
           //get the field value from the Jira issue
           fieldValue = getJiraIssueFieldValue(fieldId,issue);
-          //fieldValue = getJiraIssueFieldValue(fieldId,issue.fields[fieldId]);
         }
-        fieldValues.set(fieldId,fieldValue);
+        
+        if (fieldId != "issuelinks"){
+          fieldValues.set(fieldId,fieldValue);
+        }
+        else{
+          //process the issue links
+          var issueLinksMap = fieldValue;
+          var linkedIssuesCsv = null;
+              for (const issueLinkType of issueLinksMap.keys()){
+                linkedIssuesCsv = issueLinksMap.get(issueLinkType);
+                fieldValues.set(issueLinkType,linkedIssuesCsv);
+              }
+          }
         console.log("%s = %s",fieldId,fieldValue);
       }
     var jiraDataRecord = Array.from(fieldValues.values());
-    /*[parentLink,epicLink,issueType,key,summary,status,assignee,issueLinksCsv,description,sprint,storyPoints,resolution,labels,priority,originalStoryPoints,poolTeam,components,updated,reporter,fixVersions,targetStartDate,targetEndDate,blocked,tShirtSize];*/
 
     jiraData.push(jiraDataRecord);
   }
@@ -214,6 +181,11 @@ function getJiraIssueFieldValue(fieldId,jiraIssue){
     case "customfield_12311140": //epicLink
     case "customfield_12310243": //storyPoints
     case "customfield_12314040": //originalStoryPoints
+
+//field value is the field itself
+//-->
+    case "customfield_12317140": //Hierarchy Progress
+    case 'duedate': //'Due Date'
       fieldValue = jiraIssue.fields[fieldId];
       break;
 // --- field value is a substring
@@ -226,13 +198,19 @@ function getJiraIssueFieldValue(fieldId,jiraIssue){
     case "resolution":
     case "priority":
       fieldValue = jiraIssue.fields[fieldId].name;
-      break;
+      break;    
 // --- field value is the value itself
-    case "blocked":
+    case "customfield_12320845": //['Color Status','customfield_12320845'],
+    case "customfield_12317320": //['Current Status','customfield_12317320'],
+    case "customfield_12316543": //blocked
     case "customfield_12316541": //tShirtSize
+    case 'customfield_12319743': //'Release Blocker'
       fieldValue = jiraIssue.fields[fieldId].value;
       break;
 // --- field value is the email address
+    case "customfield_12315948":  //QA Contact 
+    case "customfield_12315141":  //['Developer','customfield_12315141'], //Developer = Feature Lead
+    case "customfield_12316752":  //['Product Manager' , 'customfield_12316752'],
     case "reporter":
     case "assignee":
       fieldValue = jiraIssue.fields[fieldId].emailAddress;
@@ -243,16 +221,19 @@ function getJiraIssueFieldValue(fieldId,jiraIssue){
       break;
 // ---
     case "updated":
+    case 'resolutiondate': //  ['Resolution Date','resolutiondate'],
       fieldValue = jiraIssue.fields[fieldId].split("T")[0];
       break;
 // ---
     case "poolTeam":
+    case 'customfield_12319440': //Planning Target
       if(jiraIssue.fields[fieldId].length == 0) { fieldValue = ""; }
       else{ fieldValue = getFieldArrayValuesAsCsv(jiraIssue.fields[fieldId],"value"); }
       break;
 // ---
     case "components":
     case "fixVersions":
+    case 'customfield_12319940':  //Target Version
       if(jiraIssue.fields[fieldId].length == 0) { fieldValue = ""; }
       else{ fieldValue = getFieldArrayValuesAsCsv(jiraIssue.fields[fieldId],"name");}
       break;
@@ -260,10 +241,14 @@ function getJiraIssueFieldValue(fieldId,jiraIssue){
     case "sprint":
       fieldValue = getSprintfromJiraIssue(jiraIssue.fields[fieldId]);
       break;
+// ---
+    case "issuelinks":
+      fieldValue = getSpecificIssueLinks(jiraIssue.fields[fieldId]);
+      //fieldValue = getAllIssueLinks(jiraIssue.fields[fieldId]);
+      break;
     default:
       // code block
       fieldValue = "";
-      //fieldValue = "value for '" + fieldId + "'";
   }
 
   return fieldValue;
@@ -295,10 +280,6 @@ function getSprintfromJiraIssue(sprints){
         aFieldValues  = sFieldValues.split(",");
         var sKeyValue,sKey,sValue;
         var aKeyValues = [{}];
-
-        //var sprints = issue.fields["customfield_12310940"];
-        //sFieldValues   = issue.fields["customfield_12310940"][sprints.length -1]; //picking the last sprint
-        //sFieldValues   = issue.fields["customfield_12310940"][0]; //picking the first sprint
 
         var i, len = aFieldValues.length;
         var done = false;
