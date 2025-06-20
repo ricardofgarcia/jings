@@ -30,7 +30,8 @@ function test_fetchCurrentUserProfileInfo(){
 
 function test_fetchJiraIssuesInfo(){
 
-    const jql = getJiraTestJql();
+    const jql = "project = XCMSTRAT AND issueFunction in commented('after 2024/01/31 before 2024/02/29') AND resolution is not EMPTY AND issueLinkType != EMPTY";
+    //const jql = getJiraTestJql();
     //const jql = "project = XCMSTRAT AND issueFunction in commented('after 2024/01/31 before 2024/02/07') AND resolution is not EMPTY";
 
     const jiraIssuesInfo = fetchJiraIssuesInfo(jql);

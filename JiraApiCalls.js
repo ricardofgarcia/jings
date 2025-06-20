@@ -36,6 +36,14 @@
     }
   }
 
+function fetchConnectedJiraUserDisplayName(){
+  var userProfileInfo = fetchCurrentUserProfileInfo();
+  var displayName = userProfileInfo.displayName;
+
+  return displayName;
+}
+
+
 /**
  * Gets headers needed for API call
  * 

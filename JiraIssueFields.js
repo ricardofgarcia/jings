@@ -24,7 +24,8 @@ const gJiraIssueFieldsMap_DisplayToId = new Map([
   ['Planning Target','customfield_12319440'],
   ['Target Version','customfield_12319940'],
   ['Hierarchy Progress','customfield_12317140'],
-  ['Due Date','duedate'],
+  //['Due Date','duedate'],
+  ['Reminder Date','customfield_12317290'],
   ['Resolution Date','resolutiondate'],
   ['QA Contact' , 'customfield_12315948'],
   ['Product Manager' , 'customfield_12316752'],
@@ -32,10 +33,13 @@ const gJiraIssueFieldsMap_DisplayToId = new Map([
   ['Blocked' , 'customfield_12316543'],
   ['Parent Link' , 'customfield_12313140'],
   ['Epic Link' , 'customfield_12311140'],
-  ['T-Shirt Size' , 'customfield_12316541'],
+  ['Feature Link' , 'customfield_12318341'],
+  ['Size' , 'customfield_12320852'],
+//  ['T-Shirt Size' , 'customfield_12316541'], //customfield_12320852
   ['Story Points' , 'customfield_12310243'],
   ['Release Blocker','customfield_12319743'],
   ['Current Status','customfield_12317320'],
+  ['Status Summary' , 'customfield_12320841'], //Status Summary <-- 06.20
   ['Issue Links' , 'issuelinks']
 ]);
 
@@ -172,6 +176,11 @@ function getJiraIssueFieldValue(fieldId,jiraIssue){
 
   var fieldValue = "";
 
+if (fieldId == "customfield_12318341"){
+  console.log ("['Feature Link' , 'customfield_12318341']");
+
+}
+
   switch(fieldId) {
 // --- field value is the field itself
     case "summary":
@@ -179,14 +188,19 @@ function getJiraIssueFieldValue(fieldId,jiraIssue){
     case "customfield_12313942": //targetEndDate
     case "customfield_12313140": //parentLink
     case "customfield_12311140": //epicLink
-    case "customfield_12310243": //storyPoints
-    case "customfield_12314040": //originalStoryPoints
-
 //field value is the field itself
 //-->
+//<--
+    case "customfield_12310243": //storyPoints
+    case "customfield_12314040": //originalStoryPoints
     case "customfield_12317140": //Hierarchy Progress
     case 'duedate': //'Due Date'
+    case 'customfield_12317290': //Reminder Date
+    case 'customfield_12320841': //Status Summary <-- 06.20
       fieldValue = jiraIssue.fields[fieldId];
+      break;
+    case "customfield_12318341": //featureLink
+      fieldValue = jiraIssue.fields[fieldId].key;
       break;
 // --- field value is a substring
     case "description":
@@ -203,8 +217,9 @@ function getJiraIssueFieldValue(fieldId,jiraIssue){
     case "customfield_12320845": //['Color Status','customfield_12320845'],
     case "customfield_12317320": //['Current Status','customfield_12317320'],
     case "customfield_12316543": //blocked
-    case "customfield_12316541": //tShirtSize
     case 'customfield_12319743': //'Release Blocker'
+    case "customfield_12320852": //size (fka tShirtSize)
+    //case "customfield_12316541": //tShirtSize
       fieldValue = jiraIssue.fields[fieldId].value;
       break;
 // --- field value is the email address
